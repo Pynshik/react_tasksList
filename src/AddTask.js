@@ -1,99 +1,229 @@
-import React, {useState} from 'react';
-import {BrowserRouter, Switch, Route, Link, Router} from 'react-router-dom';
-import AddTask from './AddTask';
-import TasksList from './Tasks/TasksList';
+import React, {useEffect, useRef, useState} from 'react';
+import PropTypes from 'prop-types';
+import {Link, Route} from 'react-router-dom';
 
-function App() {
-  const [TaskList, SetTaskList] = useState(null);
+const styles = {
+  input: {
+    width: '93%',
+    margin: '8px 0',
+    display: 'inline-block',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    padding: '12px',
+  },
+  select: {
+    width: '98%',
+    margin: '8px 0',
+    display: 'block',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    padding: '12px',
+  },
+  report: {
+    marginLeft: '-1px',
+  },
+};
+
+function AddTask(props) {
+  const [Task, SetTask] = useState({});
+  const [FormHidden, SetFormHidden] = useState(true);
+  const [OtherFieldsVisible, SetOtherFieldsVisible] = useState(true);
   const [IsEdit, SetIsEdit] = useState(null);
-  const [ChangeableTask, SetChangeableTask] = useState(null);
 
-  function addTaskOrEdit(newTask) {
-    console.log('AAAAAAAAAAAPP');
-    console.log(newTask);
-    const tasks = TaskList ? [...TaskList] : [];
+  const [firstNameErr, setFirstNameErr] = useState({});
+  const [lastNameErr, setLastNameErr] = useState({});
+  const [emailErr, setEmailErr] = useState({});
 
-    const existTask = tasks.find((task) => task.id === newTask.id);
-    console.log('ExistTask');
-    console.log(existTask);
-    if (existTask) {
-      const existIndex = tasks.indexOf(existTask);
-      tasks[existIndex] = newTask;
-      SetTaskList(tasks);
-      SetIsEdit(false);
-    } else {
-      console.log('AAAAAAAAAAAPP else');
-      console.log(newTask);
-      tasks.push(newTask);
-      console.log('AAAAAAAAAAAPP tasks');
-      console.log(tasks);
-      SetTaskList(tasks);
+  // const textareaInput = useRef(null);
+
+  useEffect(
+      () => {
+        if (props.edit) {
+          SetFormHidden(false);
+          SetTask(props.changeableTask);
+          SetIsEdit(true);
+        } else {
+          SetIsEdit(false);
+        }
+      }, [props]);
+
+  function press() {
+    SetFormHidden(!FormHidden);
+  };
+
+  function handleInputChange(event, value) {
+    const task = Task;
+    const name = event.target.name;
+    task[name] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+    SetTask(task);
+  }
+
+  function moreInfo(event) {
+    SetOtherFieldsVisible(!OtherFieldsVisible);
+  };
+
+  const inputsValidation = () => {
+    const task = Task ? {...Task} : {};
+    const firstNameErr = {};
+    const lastNameErr = {};
+    const emailErr = {};
+    const regex = /^\S+@\S+\.\S+$/;
+    let isValid = true;
+
+    if (!task.firstName) {
+      firstNameErr.noFirstName = 'Enter your first name';
+      isValid = false;
     }
-    console.log(TaskList);
-  }
 
-  function deleteTask(id) {
-    const taskIndex = TaskList.map((task) => task.id).indexOf(id);
-    const assurance = window.confirm('Do yoy want to delete this task?');
-    if (!assurance) return;
-    const tasks = {...TaskList};
-    delete tasks[taskIndex];
-    SetTaskList(tasks);
-  }
+    if (!task.lastName) {
+      lastNameErr.noFirstName = 'Enter your last name';
+      isValid = false;
+    }
 
-  const handleEditBtnClick = (id) => {
-    const taskIndex = TaskList.map((task) => task.id).indexOf(id);
-    const tasks = {...TaskList};
-    SetChangeableTask(tasks[taskIndex]);
-    SetIsEdit(true);
+    if (!regex.test(task.email)) {
+      emailErr.emailIncorrect = 'Incorrect email';
+      isValid = false;
+    }
+
+    setFirstNameErr(firstNameErr);
+    setLastNameErr(lastNameErr);
+    setEmailErr(emailErr);
+
+    return isValid;
+  };
+
+  function addTaskOrEdit() {
+    const isValid = inputsValidation();
+    if (!isValid) return;
+    console.log(Task);
+    props.addTaskOrEdit(Task);
+    SetTask({
+      id: Math.random(),
+      firstName: '',
+      lastName: '',
+      email: '',
+      fromDate: '',
+      toDate: '',
+      type: '',
+      report: false,
+      comment: '',
+    });
+    SetFormHidden(!FormHidden);
   };
 
   return (
-    <div className="wrapper">
-      <Route exact path='/'>
-        <h1>Home page</h1>
-        <Link to='/add'>
-          <button type='button' className="mainBtn">
-          +
-          </button>
-        </Link>
-        {
-          TaskList ?
-          <Link to='/taskslist'>Tasks list</Link> :
-          <h2>There is no <Link to='/taskslist'>tasks</Link> yet</h2>
-        }
-      </Route>
-      <Route path='/taskslist'>
-        <h1>Tasks list</h1>
-        {TaskList ?
-          <TasksList
-            edit={handleEditBtnClick}
-            delete={deleteTask}
-            tasks={TaskList}
-          /> :
-          <h2>There is no tasks yet</h2>}
-      </Route>
+    <div>
+      <button className="mainBtn" onClick={press}>
+        <Link to='/add'>+</Link>
+      </button>
       <Route path='/add'>
-        <h1>Add task</h1>
-        <AddTask
-          edit={IsEdit}
-          changeableTask={ChangeableTask}
-          addTaskOrEdit={addTaskOrEdit}
-        />
-      </Route>
-      <Route path='/edit/:id'>
-        <h1>Edit task</h1>
+        <div hidden={FormHidden} style={{border: IsEdit ? 'solid 1px red' : '', padding: 5, margin: 5}}>
+          <label>
+            First name:
+            <input
+              style={styles.input}
+              type="text"
+              name="firstName"
+              value={Task.firstName}
+              onChange={handleInputChange}
+            />
+          </label>
+          {Object.keys(firstNameErr).map((key)=>{
+            return <div style={{color: 'red'}}>{firstNameErr[key]}</div>;
+          })}
+          <label>
+            Last name:
+            <input
+              style={styles.input}
+              type="text"
+              name="lastName"
+              value={Task.lastName}
+              onChange={handleInputChange}
+            />
+          </label>
+          {Object.keys(lastNameErr).map((key)=>{
+            return <div style={{color: 'red'}}>{lastNameErr[key]}</div>;
+          })}
+          <label>
+            Email:
+            <input
+              style={styles.input}
+              type="email"
+              name="email"
+              value={Task.email}
+              onChange={handleInputChange}
+            />
+          </label>
+          {Object.keys(emailErr).map((key)=>{
+            return <div style={{color: 'red'}}>{emailErr[key]}</div>;
+          })}
+          <label>
+            from:
+            <input
+              style={styles.input}
+              type="date"
+              name="fromDate"
+              checked={Task.fromDate}
+              onChange={handleInputChange}
+            />
+          </label>
+          <label>
+            to:
+            <input
+              style={styles.input}
+              type="date"
+              name="toDate"
+              value={Task.toDate}
+              onChange={handleInputChange}
+            />
+          </label>
+          <label>
+            type:&nbsp;
+            <select
+              style={styles.select}
+              name="type"
+              value={Task.type}
+              onChange={handleInputChange}>
+              <option defaultValue value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </label>
+
+          <input type="button" value="more" onClick={moreInfo} />
+
+          <div hidden={OtherFieldsVisible}>
+            <div>
+              <input style={styles.report}
+                type="checkbox"
+                name="report"
+                value={Task.report}
+                onClick={handleInputChange} />
+                make report
+            </div>
+            <label>
+              Comment:
+              <textarea style={styles.input}
+                // ref={textareaInput}
+                name="comment"
+                value={Task.comment}
+                onChange={handleInputChange}
+              />
+            </label>
+          </div>
+          <input type="button" onClick={addTaskOrEdit} value={IsEdit ? 'Save' : 'Add'} />
+        </div>
       </Route>
     </div>
   );
 }
 
-export default App;
+AddTask.propTypes = {
+  Task: PropTypes.object,
+  task: PropTypes.object,
+  edit: PropTypes.func,
+  changeableTask: PropTypes.object,
+  addTaskOrEdit: PropTypes.func,
+};
 
-// (
-//   <TasksList
-//     edit={handleEditBtnClick}
-//     delete={deleteTask}
-//     tasks={TaskList}
-//   />
-// )
+export default AddTask;
