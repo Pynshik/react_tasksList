@@ -13,10 +13,9 @@ const styles = {
 function TasksList(props) {
   return (
     <div>
-      {console.log('ALEEEEEEEEE')}
-      {console.log(props)}
       <ul style={styles.ul}>
-        {props.tasks.map((task, index) => {
+        {props.tasks ?
+        props.tasks.map((task, index) => {
           return (
             <TasksItem
               task={task}
@@ -26,7 +25,8 @@ function TasksList(props) {
               delete={props.delete}
             />
           );
-        })}
+        }) :
+        <h2>There is no tasks yet</h2>}
       </ul>
     </div>
   );
