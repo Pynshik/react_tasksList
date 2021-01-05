@@ -1,91 +1,92 @@
-import React, {useState} from 'react';
-import {Switch, Route, Link, Router} from 'react-router-dom';
+import PropTypes from 'prop-types';
+import {useState} from 'react';
+import {Route, Link, useHistory} from 'react-router-dom';
+import {connect} from 'react-redux';
+import TaskItem from './TasksItem';
 import AddTask from './AddTask';
-import TasksList from './Tasks/TasksList';
+import EditTask from './EditTask';
+import {addTask, deleteTask, editTask} from './redux/actions';
 
-function App() {
-  const [TaskList, SetTaskList] = useState(null);
-  const [IsEdit, SetIsEdit] = useState(null);
-  const [ChangeableTask, SetChangeableTask] = useState(null);
+const App = (props) => {
+  const history = useHistory();
+  const [EditableTask, SetEditableTask] = useState(null);
 
-  function addTaskOrEdit(newTask) {
-    const tasks = TaskList ? [...TaskList] : [];
-
-    const existTask = tasks.find((task) => task.id === newTask.id);
-    if (existTask) {
-      const existIndex = tasks.indexOf(existTask);
-      tasks[existIndex] = newTask;
-      SetTaskList(tasks);
-      SetIsEdit(false);
-    } else {
-      tasks.push(newTask);
-      SetTaskList(tasks);
-    }
+  function CreateTask(newTask) {
+    props.addTask(newTask);
+    history.push('/list');
   }
 
-  function deleteTask(id) {
-    const taskIndex = TaskList.map((task) => task.id).indexOf(id);
-    const assurance = window.confirm('Do yoy want to delete this task?');
-    if (!assurance) return;
-    const tasks = {...TaskList};
-    delete tasks[taskIndex];
-    SetTaskList(tasks);
+  function HandleEditBtn(id) {
+    const task = props.tasks.find((task) => task.id === id);
+    SetEditableTask(task);
+    history.push('/edit');
   }
 
-  const handleEditBtnClick = (id) => {
-    const taskIndex = TaskList.map((task) => task.id).indexOf(id);
-    const tasks = {...TaskList};
-    SetChangeableTask(tasks[taskIndex]);
-    SetIsEdit(true);
-  };
+  function UpdateTask(task) {
+    props.editTask(task);
+    history.push('/list');
+  }
+
+
+  function DeleteTask(id) {
+    props.deleteTask(id);
+    history.push('/list');
+  }
 
   return (
-    <div className="wrapper">
-      <Switch>
-        <Route exact path='/'>
-          <h1>Home page</h1>
-          <Link to='/add'>
-            <button type='button' className="mainBtn">
-            +
-            </button>
-          </Link>
-          {
-            TaskList ?
-            <Link to='/taskslist'>Tasks list</Link> :
-            <h2>There is no <Link to='/taskslist'>tasks</Link> yet</h2>
-          }
-        </Route>
-        <Route path='/add'>
-          <h1>Add task</h1>
-          <AddTask
-            edit={IsEdit}
-            changeableTask={ChangeableTask}
-            addTaskOrEdit={addTaskOrEdit}
-          />
-          <h2><Link to='/taskslist'>Tasks list</Link></h2>
-          <h2><Link to='/'> Home page</Link></h2>
-        </Route>
-        <Route path='/taskslist'>
-          <h1>Tasks list</h1>
-          {TaskList ?
-          <TasksList
-            edit={handleEditBtnClick}
-            delete={deleteTask}
-            tasks={TaskList}
-          /> :
-          <h2>
-            There is no tasks yet.
-            <Link to='/add'> Add your first task</Link>
-          </h2>}
-          <Link to='/'>Home page</Link>
-        </Route>
-        <Route path='/edit'>
-          <h1>Edit task</h1>
-          <Link to='/'>Home page</Link>
-        </Route>
-      </Switch>
+    <div className="App">
+      <ul className="link">
+        <li>
+          <Link to="/add">Create task</Link>
+        </li>
+        <li>
+          <Link to="/list">Task list</Link>
+        </li>
+      </ul>
+      <Route path="/edit">
+        <EditTask editableTask={EditableTask} updateTask={UpdateTask} />
+      </Route>
+      <Route path="/add">
+        <AddTask createTask={CreateTask} />
+      </Route>
+      <ul className="wrapper">
+        {props.tasks ?
+          props.tasks.map((task, index) => {
+            return (
+              <Route path="/list">
+                <TaskItem
+                  edit={HandleEditBtn}
+                  deleteTask={DeleteTask}
+                  task={task}
+                  index={index}
+                  key={task.id}
+                />
+              </Route>
+            );
+          }) :
+          'There is no tasks.'}
+      </ul>
     </div>
   );
-}
+};
 
-export default App;
+const mapStatetoProps = (state) => {
+  return {
+    tasks: state.tasks.tasks,
+  };
+};
+
+const mapDispatchToProps = {
+  addTask,
+  deleteTask,
+  editTask,
+};
+
+export default connect(mapStatetoProps, mapDispatchToProps)(App);
+
+App.propTypes = {
+  addTask: PropTypes.func,
+  editTask: PropTypes.func,
+  deleteTask: PropTypes.func,
+  tasks: PropTypes.array,
+};
