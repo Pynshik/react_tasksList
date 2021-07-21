@@ -1,0 +1,25 @@
+{
+  "title": "Welcome to react using react-i18next",
+  "description": {
+    "create_task": "Create task",
+    "task_list": "Task list",
+    "first_name": "First name",
+    "last_name": "Last name",
+    "email": "email",
+    "from": "from",
+    "to": "to",
+    "type": "type",
+    "make_report": "make report",
+    "comment": "Comment",
+    "no-tasks": "There is no tasks",
+    "save": "Save",
+    "more_info": "More info",
+    "edit": "Edit",
+    "add": "Add",
+    "delete_task": "Do you realy want to delete the task?",
+    "date": "Today is {{date, MM.DD.YYYY}}",
+    "no_comment": "no comment",
+    "true": "yes",
+    "false": "no"
+  }
+}

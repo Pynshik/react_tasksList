@@ -1,5 +1,8 @@
+import {useTranslation} from 'react-i18next';
 import PropTypes from 'prop-types';
 function EditTask({updateTask, editableTask}) {
+  const {t, i18n} = useTranslation();
+
   function HandleEditBtn(event) {
     event.preventDefault();
     const task =
@@ -19,22 +22,22 @@ function EditTask({updateTask, editableTask}) {
   return (
     <div>
       <form className="form-1" onSubmit={HandleEditBtn}>
-        <label>First name:
+        <label>{t('description.first_name')}:
           <input name="name" defaultValue={editableTask.name}></input>
         </label>
-        <label>Last name:
+        <label>{t('description.last_name')}:
           <input name="surname" defaultValue={editableTask.surname}></input>
         </label>
-        <label>Email:
+        <label>{t('description.email')}:
           <input type="email" name="email" defaultValue={editableTask.email} />
         </label>
-        <label>from:
+        <label>{t('description.from')}:
           <input type="date" name="from" defaultValue={editableTask.from ? editableTask.from.toJSON().substring(0, 10) : new Date().toISOString().split('T')[0]} />
         </label>
-        <label>to:
+        <label>{t('description.to')}:
           <input type="date" name="to" defaultValue={editableTask.to || new Date().toISOString().split('T')[0]} />
         </label>
-        <label>type:&nbsp;
+        <label>{t('description.type')}:&nbsp;
           <select name="type" defaultValue={editableTask.type || '1'}>
             <option value="1">1</option>
             <option value="2">2</option>
@@ -43,13 +46,13 @@ function EditTask({updateTask, editableTask}) {
         </label>
         <label className="checkbox">
           <input type="checkbox" name="report" defaultValue={editableTask.report || 'false'} />
-          <div className="checkbox__text">make report</div>
+          <div className="checkbox__text">{t('description.make_report')}</div>
         </label>
-        <label>Comment:
+        <label>{t('description.comment')}:
           <textarea name="comment" defaultValue={editableTask.comment || 'no comment'} />
         </label>
 
-        <input className="inputBtn" type="submit" value="Save" />
+        <input className="inputBtn" type="submit" value={t('description.save')} />
       </form>
     </div>
   );

@@ -6,10 +6,15 @@ import TaskItem from './TasksItem';
 import AddTask from './AddTask';
 import EditTask from './EditTask';
 import {addTask, deleteTask, editTask} from './redux/actions';
+import {useTranslation} from 'react-i18next';
+import moment from 'moment';
 
 const App = (props) => {
   const history = useHistory();
   const [EditableTask, SetEditableTask] = useState(null);
+  const [language, setLanguage] = useState('');
+
+  const {t, i18n} = useTranslation();
 
   function CreateTask(newTask) {
     props.addTask(newTask);
@@ -33,14 +38,27 @@ const App = (props) => {
     history.push('/list');
   }
 
+  const changeLanguage = (language) => {
+    i18n.changeLanguage(language);
+    moment.locale(language);
+    setLanguage(language);
+    };
+
   return (
     <div className="App">
+      <div style={{'margin': '10px 0 0 880px'}}>
+        <button onClick={() => changeLanguage('en')}>EN</button>
+        <button onClick={() =>changeLanguage('ru')}>RU</button>
+      </div>
+      <hr/>
+      <div style={{'margin': '10px 0 0 845px'}}>{t('description.date', {date: new Date()})}</div>
+
       <ul className="link">
         <li>
-          <Link to="/add">Create task</Link>
+          <Link to="/add">{t('description.create_task')}</Link>
         </li>
         <li>
-          <Link to="/list">Task list</Link>
+          <Link to="/list">{t('description.task_list')}</Link>
         </li>
       </ul>
       <Route path="/edit">
@@ -64,7 +82,7 @@ const App = (props) => {
               </Route>
             );
           }) :
-          'There is no tasks.'}
+          t('description.no-tasks')`.`}
       </ul>
     </div>
   );

@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import {ADD_TASK, DELETE_TASK, EDIT_TASK} from './types';
 
 const initialState = {
@@ -13,7 +14,7 @@ export const tasksReducer = (state = initialState, action) => {
     case ADD_TASK:
       return {...state, tasks: state.tasks.concat(action.payload)};
     case DELETE_TASK:
-      const result = confirm('Do you want to delete this task?');
+      const result = confirm(`${i18next.t('description.delete_task')}`);
       if (result) {
         let newTaskList = [...state.tasks];
         newTaskList = newTaskList.filter((task) => task.id !== action.payload);
